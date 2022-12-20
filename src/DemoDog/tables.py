@@ -17,7 +17,7 @@ class Dog(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     is_deleted = Column(Boolean)
 
-    user = relationship("User", back_populates="dogs")
+    user = relationship("User", backref='dogs')
 
 
 class User(Base):
@@ -40,7 +40,7 @@ class Price(Base):
     walk_price = Column(Numeric(7, 2))
     overexpose_price = Column(Numeric(7, 2))
 
-    sitter = relationship("Sitter", back_populates="sitters")
+    sitter = relationship("Sitter", backref='prices')
 
 
 class Sitter(Base):
@@ -64,3 +64,6 @@ class Order(Base):
     service_type = Column(String)
     status = Column(String)
     is_deleted = Column(Boolean)
+
+    user = relationship("User", backref='orders')
+    sitter = relationship("Sitter", backref='orders')
