@@ -3,7 +3,7 @@ from typing import List
 from fastapi import Depends, APIRouter, status, Response
 
 from .. import models
-from ..models.sitters import Sitters
+from ..models.users import Sitters
 from ..services.sitters import SittersService
 
 router = APIRouter(
@@ -14,7 +14,7 @@ router = APIRouter(
 
 @router.post('/', response_model=int)
 def create_sitter(
-        sitter_data: models.UpdateSitter,
+        sitter_data: models.BaseCreateUser,
         sitters_service: SittersService = Depends()
 ):
     return sitters_service.create_sitter(sitter_data)

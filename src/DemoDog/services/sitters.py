@@ -13,13 +13,32 @@ class SittersService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
+    @classmethod
+    def _is_email_exist(cls, email: str) -> bool:
+        sitter = (
+            cls.session
+            .query(tables.Sitter)
+            .filter_by(email=email)
+        )
+
+        if not sitter:
+            return True
+        else:
+            return False
+
     def create_sitter(
             self,
-            create_sitter: models.CreateSitter
+            create_sitter: models.BaseCreateUser
     ) -> int:
         sitter = tables.Sitter(**create_sitter.dict())
+
         sitter.date_create = datetime.datetime.now()
         sitter.is_deleted = False
+        sitter.role = models.Role.SITTER
+
+        if self._is_email_exist(sitter.email):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+
         self.session.add(sitter)
         self.session.commit()
         return sitter.id

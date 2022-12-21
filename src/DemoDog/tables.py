@@ -20,15 +20,43 @@ class Dog(Base):
     user = relationship("User", backref='dogs')
 
 
-class User(Base):
-    __tablename__ = 'users'
+class BaseUser(Base):
+    __tablename__ = 'base-user'
+
     id = Column(Integer, primary_key=True)
+    email = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     second_name = Column(String, nullable=False)
     father_name = Column(String)
     date_create = Column(DateTime)
     date_update = Column(DateTime)
     is_deleted = Column(Boolean)
+    type = Column(String(50))
+
+    __mapper_args__ = {
+        "polymorphic_identity": "base-user",
+        "polymorphic_on": type,
+    }
+
+
+class User(BaseUser):
+    __tablename__ = 'users'
+    id = Column(Integer, ForeignKey("base-user.id"), primary_key=True)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "users",
+    }
+
+
+class Sitter(BaseUser):
+    __tablename__ = 'sitters'
+    id = Column(Integer, ForeignKey("base-user.id"), primary_key=True)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "sitters",
+    }
 
 
 class Price(Base):
@@ -41,17 +69,6 @@ class Price(Base):
     overexpose_price = Column(Numeric(7, 2))
 
     sitter = relationship("Sitter", backref='prices')
-
-
-class Sitter(Base):
-    __tablename__ = 'sitters'
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String, nullable=False)
-    second_name = Column(String, nullable=False)
-    father_name = Column(String)
-    date_create = Column(DateTime)
-    date_update = Column(DateTime)
-    is_deleted = Column(Boolean)
 
 
 class Order(Base):
