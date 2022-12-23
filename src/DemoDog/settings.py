@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD = 'qwe123'
     POSTGRES_SERVER: str = 'localhost'
     POSTGRES_PORT: str = '5432'
-    POSTGRES_DB: str = 'DemoDog'
+    POSTGRES_DB: str = 'DemoDog2'
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
     JWT_SECRET = 'temp'
     JWT_ALGORITHM = 'HS256'

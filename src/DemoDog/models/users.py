@@ -13,8 +13,6 @@ class BaseUser(BaseModel):
     first_name: str
     second_name: str
     father_name: Optional[str]
-    date_create: Optional[datetime]
-    date_update: Optional[datetime]
     role: Role
 
     class Config:
@@ -50,3 +48,39 @@ class CreateUser(BaseCreateUser):
     class Config:
         orm_mode = True
 
+
+class CreateSitter(BaseCreateUser):
+    class Config:
+        orm_mode = True
+
+
+class OutputSitter(BaseModel):
+    email: str
+    first_name: str
+    second_name: str
+    father_name: Optional[str]
+    date_create: Optional[datetime]
+    date_update: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
+class OutputUser(BaseModel):
+    email: str
+    first_name: str
+    second_name: str
+    father_name: Optional[str]
+    date_create: Optional[datetime]
+    date_update: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
+class AuthUser(BaseModel):
+    id: int
+    role: Role
+
+    class Config:
+        orm_mode = True

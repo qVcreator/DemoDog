@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from sqlalchemy.sql import functions
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Numeric, Boolean, DateTime, Identity
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -10,7 +13,7 @@ class Dog(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     age = Column(Integer, nullable=False)
-    date_create = Column(DateTime)
+    date_create = Column(DateTime,  default=datetime.now())
     date_update = Column(DateTime)
     weight = Column(Float)
     breed = Column(String)
@@ -30,8 +33,8 @@ class BaseUser(Base):
     first_name = Column(String, nullable=False)
     second_name = Column(String, nullable=False)
     father_name = Column(String)
-    date_create = Column(DateTime)
-    date_update = Column(DateTime)
+    date_create = Column(DateTime(timezone=True), server_default=functions.now())
+    date_update = Column(DateTime(timezone=True), onupdate=functions.now())
     is_deleted = Column(Boolean)
     type = Column(String(50))
 
@@ -63,8 +66,8 @@ class Price(Base):
     __tablename__ = 'prices'
     id = Column(Integer, primary_key=True)
     sitter_id = Column(Integer, ForeignKey("sitters.id"), Identity())
-    date_create = Column(DateTime)
-    date_update = Column(DateTime)
+    date_create = Column(DateTime(timezone=True), server_default=functions.now())
+    date_update = Column(DateTime(timezone=True), onupdate=functions.now())
     walk_price = Column(Numeric(7, 2))
     overexpose_price = Column(Numeric(7, 2))
 
@@ -76,8 +79,8 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     sitter_id = Column(Integer, ForeignKey("sitters.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
-    date_create = Column(DateTime)
-    date_update = Column(DateTime)
+    date_create = Column(DateTime(timezone=True), server_default=functions.now())
+    date_update = Column(DateTime(timezone=True), onupdate=functions.now())
     service_type = Column(String)
     status = Column(String)
     is_deleted = Column(Boolean)

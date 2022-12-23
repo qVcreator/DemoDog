@@ -1,10 +1,11 @@
 import datetime
-from typing import overload
+from typing import overload, List
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from passlib.hash import bcrypt
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from DemoDog import tables, models
@@ -14,7 +15,7 @@ from DemoDog.settings import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in/')
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> int:
+def get_current_user(token: str = Depends(oauth2_scheme)) -> models.AuthUser:
     return AuthService.verify_token(token)
 
 
@@ -23,12 +24,11 @@ class AuthService:
     def verify_password(cls, plain_password: str, hash_password: str) -> bool:
         return bcrypt.verify(plain_password, hash_password)
 
-    @classmethod
-    def hash_password(cls, password: str) -> str:
+    def hash_password(self, password: str) -> str:
         return bcrypt.hash(password)
 
     @classmethod
-    def verify_token(cls, token: str) -> int:
+    def verify_token(cls, token: str) -> models.BaseUser:
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
@@ -44,7 +44,14 @@ class AuthService:
         except JWTError:
             raise exception from None
 
-        return payload.get('sub')
+        user_data = payload.get('user')
+
+        try:
+            user = models.BaseUser.parse_obj(user_data)
+        except ValidationError:
+            raise exception from None
+
+        return user
 
     @classmethod
     def create_token(cls, user: tables.BaseUser) -> models.Token:
@@ -55,14 +62,16 @@ class AuthService:
             'nbf': now,
             'exp': now + datetime.timedelta(seconds=settings.JWT_EXPIRES_S),
             'sub': str(user_data.id),
-            'role': user_data.role,
+            'user': user_data.dict(),
         }
         token = jwt.encode(
             payload,
             settings.JWT_SECRET,
             algorithm=settings.JWT_ALGORITHM,
         )
-        return models.Token(access_token=token)
+
+        result = models.Token(access_token=token)
+        return result
 
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session

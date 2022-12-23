@@ -4,19 +4,21 @@ from typing import List
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from .auth import AuthService
 from .. import tables, models
 
 from ..database import get_session
 
 
 class SittersService:
-    def __init__(self, session: Session = Depends(get_session)):
+    def __init__(self, session: Session = Depends(get_session),
+                 auth_service: AuthService = Depends()):
         self.session = session
+        self.auth_service = auth_service
 
-    @classmethod
-    def _is_email_exist(cls, email: str) -> bool:
+    def _is_email_exist(self, email: str) -> bool:
         sitter = (
-            cls.session
+            self.session
             .query(tables.Sitter)
             .filter_by(email=email)
         )
@@ -28,20 +30,25 @@ class SittersService:
 
     def create_sitter(
             self,
-            create_sitter: models.BaseCreateUser
-    ) -> int:
-        sitter = tables.Sitter(**create_sitter.dict())
-
-        sitter.date_create = datetime.datetime.now()
-        sitter.is_deleted = False
-        sitter.role = models.Role.SITTER
+            create_sitter: models.CreateSitter
+    ) -> models.Token:
+        sitter = tables.Sitter(
+            email=create_sitter.email,
+            first_name=create_sitter.first_name,
+            second_name=create_sitter.second_name,
+            father_name=create_sitter.father_name,
+            role=models.Role.SITTER,
+            is_deleted=False,
+            password=self.auth_service.hash_password(create_sitter.password),
+        )
 
         if self._is_email_exist(sitter.email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
         self.session.add(sitter)
         self.session.commit()
-        return sitter.id
+        result = self.auth_service.create_token(sitter)
+        return result
 
     def get_sitter_by_id(self, sitter_id: int) -> tables.Sitter:
         sitter = (

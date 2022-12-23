@@ -40,11 +40,3 @@ def sign_in(
         auth_data.username,
         auth_data.password,
     )
-
-
-@router.get(
-    '/user/',
-    response_model=models.BaseUser,
-)
-def get_user(user: models.BaseUser = Depends(get_current_user)):
-    return user
